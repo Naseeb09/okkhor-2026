@@ -169,7 +169,7 @@ export function HeroCanvas({ text, chaos, complexity, colorMode }: HeroCanvasPro
       }
 
       ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = `rgba(2, 8, 6, ${1 - dna.lifespan})`;
+      ctx.fillStyle = `rgba(1, 4, 3, ${1 - dna.lifespan})`;
       ctx.fillRect(0, 0, physW, physH);
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
@@ -219,21 +219,28 @@ export function HeroCanvas({ text, chaos, complexity, colorMode }: HeroCanvasPro
         if (p.y < -50) p.y = lh + 50; else if (p.y > lh + 50) p.y = -50;
 
         const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-        let alpha = Math.min(0.85, 0.15 + speed * 0.4);
+        
+        // PREMIUM COLOR LOGIC
+        // Clamp saturation and lightness to prevent the white-out bug
+        const h = (colorMode + p.hue + speed * 10) % 360;
+        const s = 70 + Math.min(30, speed * 5); // Richer saturation
+        const l = 45 + Math.min(15, speed * 2); // Cap lightness at 60%
+        
+        let alpha = Math.min(0.7, 0.1 + speed * 0.4);
         if (phase === "DISSOLVING") alpha *= (1 - (elapsed / 4000));
 
-        const h = (colorMode + p.hue + speed * 15) % 360;
         ctx.beginPath();
-        ctx.strokeStyle = `hsla(${h}, 85%, 65%, ${alpha})`;
-        ctx.lineWidth = p.size * (1 + speed * 0.3);
+        ctx.strokeStyle = `hsla(${h}, ${s}%, ${l}%, ${alpha})`;
+        ctx.lineWidth = p.size * (0.8 + speed * 0.2);
         ctx.moveTo(p.x, p.y);
-        ctx.lineTo(p.x - p.vx * 3, p.y - p.vy * 3);
+        ctx.lineTo(p.x - p.vx * 2.5, p.y - p.vy * 2.5);
         ctx.stroke();
 
-        if (speed > 2.5) {
+        // Secondary glow core (No white-out center)
+        if (speed > 3.0) {
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size * 1.2, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${h}, 100%, 90%, ${alpha * 0.4})`;
+          ctx.arc(p.x, p.y, p.size * 1.1, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${h}, 100%, 70%, ${alpha * 0.3})`;
           ctx.fill();
         }
       }
@@ -268,5 +275,5 @@ export function HeroCanvas({ text, chaos, complexity, colorMode }: HeroCanvasPro
     initParticles(c.width, c.height, S.current.dpr);
   }, [text, initParticles]);
 
-  return <canvas ref={canvasRef} style={{ display: "block", background: "#020806" }} />;
+  return <canvas ref={canvasRef} style={{ display: "block", background: "#010403" }} />;
 }
