@@ -168,11 +168,15 @@ export function HeroCanvas({ text, chaos, complexity, colorMode }: HeroCanvasPro
         return;
       }
 
+      // --- COLORFUL TRAIL FIX ---
+      // Instead of pure black, we use a tiny bit of the colorMode to "stain" the trails
       ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = `rgba(1, 4, 3, ${1 - dna.lifespan})`;
+      ctx.fillStyle = `hsla(${colorMode}, 30%, 2%, ${1 - dna.lifespan})`; 
       ctx.fillRect(0, 0, physW, physH);
+      
       ctx.save();
-      ctx.globalCompositeOperation = "lighter";
+      // "screen" is often better for neon trails than "lighter" because it avoids the white-clamping
+      ctx.globalCompositeOperation = "screen"; 
       ctx.scale(dpr, dpr);
 
       for (const p of particles) {
@@ -219,28 +223,27 @@ export function HeroCanvas({ text, chaos, complexity, colorMode }: HeroCanvasPro
         if (p.y < -50) p.y = lh + 50; else if (p.y > lh + 50) p.y = -50;
 
         const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+      
+        const h = (colorMode + p.hue + speed * 12) % 360;
+        const s = 80 + Math.min(20, speed * 5);
+        // Reduce lightness slightly to let the hue shine through more in "screen" mode
+        const l = 40 + Math.min(10, speed * 2);
         
-        // PREMIUM COLOR LOGIC
-        // Clamp saturation and lightness to prevent the white-out bug
-        const h = (colorMode + p.hue + speed * 10) % 360;
-        const s = 70 + Math.min(30, speed * 5); // Richer saturation
-        const l = 45 + Math.min(15, speed * 2); // Cap lightness at 60%
-        
-        let alpha = Math.min(0.7, 0.1 + speed * 0.4);
+        let alpha = Math.min(0.6, 0.05 + speed * 0.3);
         if (phase === "DISSOLVING") alpha *= (1 - (elapsed / 4000));
 
         ctx.beginPath();
         ctx.strokeStyle = `hsla(${h}, ${s}%, ${l}%, ${alpha})`;
         ctx.lineWidth = p.size * (0.8 + speed * 0.2);
         ctx.moveTo(p.x, p.y);
-        ctx.lineTo(p.x - p.vx * 2.5, p.y - p.vy * 2.5);
+        ctx.lineTo(p.x - p.vx * 3.5, p.y - p.vy * 3.5); // Longer streaks
         ctx.stroke();
 
-        // Secondary glow core (No white-out center)
-        if (speed > 3.0) {
+        if (speed > 2.5) {
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size * 1.1, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${h}, 100%, 70%, ${alpha * 0.3})`;
+          ctx.arc(p.x, p.y, p.size * 1.2, 0, Math.PI * 2);
+          // Dot core also respects the color mode now
+          ctx.fillStyle = `hsla(${h}, 100%, 75%, ${alpha * 0.5})`;
           ctx.fill();
         }
       }
