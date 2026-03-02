@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Settings2, Command, Zap, X } from "lucide-react";
-import { getTransliterationPreview } from "@/lib/phonetic-transliteration";
+import { phoneticTransliterate } from "@/lib/phonetic-transliteration";
 
 interface CommandBarProps {
   value?: string;

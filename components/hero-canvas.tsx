@@ -168,14 +168,12 @@ export function HeroCanvas({ text, chaos, complexity, colorMode }: HeroCanvasPro
         return;
       }
 
-      // --- COLORFUL TRAIL FIX ---
-      // Instead of pure black, we use a tiny bit of the colorMode to "stain" the trails
       ctx.globalCompositeOperation = "source-over";
       ctx.fillStyle = `hsla(${colorMode}, 30%, 2%, ${1 - dna.lifespan})`; 
       ctx.fillRect(0, 0, physW, physH);
       
       ctx.save();
-      // "screen" is often better for neon trails than "lighter" because it avoids the white-clamping
+     
       ctx.globalCompositeOperation = "screen"; 
       ctx.scale(dpr, dpr);
 
@@ -226,7 +224,7 @@ export function HeroCanvas({ text, chaos, complexity, colorMode }: HeroCanvasPro
       
         const h = (colorMode + p.hue + speed * 12) % 360;
         const s = 80 + Math.min(20, speed * 5);
-        // Reduce lightness slightly to let the hue shine through more in "screen" mode
+    
         const l = 40 + Math.min(10, speed * 2);
         
         let alpha = Math.min(0.6, 0.05 + speed * 0.3);
@@ -236,13 +234,12 @@ export function HeroCanvas({ text, chaos, complexity, colorMode }: HeroCanvasPro
         ctx.strokeStyle = `hsla(${h}, ${s}%, ${l}%, ${alpha})`;
         ctx.lineWidth = p.size * (0.8 + speed * 0.2);
         ctx.moveTo(p.x, p.y);
-        ctx.lineTo(p.x - p.vx * 3.5, p.y - p.vy * 3.5); // Longer streaks
+        ctx.lineTo(p.x - p.vx * 3.5, p.y - p.vy * 3.5); 
         ctx.stroke();
 
         if (speed > 2.5) {
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.size * 1.2, 0, Math.PI * 2);
-          // Dot core also respects the color mode now
           ctx.fillStyle = `hsla(${h}, 100%, 75%, ${alpha * 0.5})`;
           ctx.fill();
         }
