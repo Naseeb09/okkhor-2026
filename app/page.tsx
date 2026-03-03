@@ -1,448 +1,230 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ChevronRight } from "lucide-react";
-import Image from "next/image";
+import { Github, Twitter, Globe } from "lucide-react";
 
-const spring = { type: "spring", stiffness: 300, damping: 30 };
+const TIMELINE_EVENTS = [
+  { year: "১০০০", bengaliYear: "১০০০ খ্রিস্টাব্দ", title: "Classical Birth", description: "Ancient Bangla scripts emerge from Sanskrit roots, forming the backbone of the language." },
+  { year: "১৩৫০", bengaliYear: "১৩৫০ খ্রিস্টাব্দ", title: "Medieval Flourish", description: "Bangla literature reaches its first golden age under regional rulers and poets." },
+  { year: "১৯৫২", bengaliYear: "১৯৫২ খ্রিস্টাব্দ", title: "Language Movement", description: "The historic struggle where students sacrificed for the constitutional status of Bangla." },
+];
+
+const STATS = [
+  { label: "Speakers Worldwide", value: "300M+", sub: "5th Most Spoken Language" },
+  { label: "Historical Weight", value: "1952", sub: "The Language Revolution" },
+  { label: "Global Presence", value: "30+", sub: "Countries with Bangla Speakers" },
+];
+
+const GLYPHS = [
+  { char: "অ", name: "A-Kar", brahmi: "𑀅", evolution: "Brahmi → Medieval → Modern" },
+  { char: "ক", name: "Ka", brahmi: "𑀓", evolution: "Brahmi → Eastern Nagari → Modern" },
+  { char: "শ", name: "Sha", brahmi: "𑀰", evolution: "Brahmi → Proto-Bengali → Modern" },
+];
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false);
   const [activeTimeline, setActiveTimeline] = useState<number | null>(null);
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
-  const [hovered, setHovered] = useState<string | null>(null);
-  const [btnDelta, setBtnDelta] = useState({ explore: { x: 0, y: 0 }, create: { x: 0, y: 0 }, game: { x: 0, y: 0 } });
-  const [tlCursor, setTlCursor] = useState({ x: 0, y: 0 });
+  const [activeGlyph, setActiveGlyph] = useState<number | null>(null);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const handleMouseMove = (e: MouseEvent) => {
-      setMouse({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.08,
-        delayChildren: 0.2,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
-    },
-  };
-
-  const timelineEvents = [
-    { year: "১০০০", bengaliYear: "১০০০ খ্রিস্টাব্দ", title: "Classical Birth", description: "Ancient Bangla scripts emerge from Sanskrit roots" },
-    { year: "১৩৫০", bengaliYear: "১৩৫০ খ্রিস্টাব্দ", title: "Medieval Flourish", description: "Bangla literature reaches golden age under rulers" },
-    { year: "১৯৫২", bengaliYear: "১৯৫২ খ্রিস্টাব্দ", title: "Language Movement", description: "Students sacrificed for Bangla's constitutional status" },
-  ];
 
   if (!mounted) return null;
 
   return (
-    <main className="relative min-h-screen bg-background overflow-hidden">
-      {/* Deep forest green with subtle grain */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-background" />
+    <main className="relative min-h-screen bg-[#020a06] text-foreground selection:bg-accent/40">
+      
+<nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 px-6 ${scrolled ? "py-4" : "py-10"}`}>
+  <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <Link href="/" className="font-bangla text-3xl text-white hover:text-accent transition-colors">ও</Link>
+    
+   
+    <div className="flex items-center gap-8 bg-[#0a1510]/60 backdrop-blur-[20px] border border-white/10 px-8 py-3 rounded-full shadow-2xl">
+      {["History", "Glyphs", "Apps"].map((item) => (
+        <Link 
+          key={item} 
+          href={`#${item.toLowerCase()}`} 
+          className="font-mono text-[11px] uppercase tracking-[0.5em] text-white/40 hover:text-white transition-all duration-300 font-black"
+        >
+          {item}
+        </Link>
+      ))}
+    </div>
+    <div className="w-8 md:block hidden" />
+  </div>
+</nav>
+
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,255,204,0.1),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,rgba(0,255,204,0.06),transparent_60%)]" />
       </div>
 
-      {/* Content */}
       <div className="relative z-10">
-        {/* Hero Section */}
-        <motion.section
-          className="min-h-screen flex flex-col items-center justify-center px-4 pt-20"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Main Title */}
-          <motion.div variants={itemVariants} className="text-center mb-12">
-            <h1 className="font-bangla font-thin text-[140px] md:text-[180px] lg:text-[220px] leading-none text-foreground tracking-tighter">
+        <section className="min-h-screen flex flex-col items-center justify-center px-4">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
+            <h1 className="font-bangla font-thin text-[120px] md:text-[200px] leading-none text-white drop-shadow-[0_0_40px_rgba(0,255,204,0.2)]">
               ওক্ষর
             </h1>
-            <p className="font-mono text-xs md:text-sm tracking-widest text-foreground/60 mt-8 uppercase letter-spacing-wide">
-              The Living Script
-            </p>
+            <p className="font-mono text-sm tracking-[0.5em] text-accent mt-8 uppercase font-bold">The Living Script</p>
           </motion.div>
-
-          {/* Heritage Summary */}
-          <motion.div
-            variants={itemVariants}
-            className="max-w-3xl text-center mb-20 space-y-4"
-          >
-            <p className="font-bangla text-xl md:text-2xl text-foreground leading-relaxed">
-              শুরু থেকে স্বাধীনতা পর্যন্ত, বাংলা ভাষার যাত্রা একটি সাংস্কৃতিক বিপ্লব।
+          <div className="max-w-2xl text-center mb-20">
+            <p className="font-bangla text-2xl md:text-3xl text-white/90 mb-6 font-light">শুরু থেকে স্বাধীনতা পর্যন্ত, বাংলা ভাষার যাত্রা একটি সাংস্কৃতিক বিপ্লব।</p>
+            <p className="font-mono text-xs md:text-sm text-white/60 uppercase tracking-widest leading-relaxed">
+              From classical scripts to the heroic movement of 1952, witness the evolution of a language born from resistance.
             </p>
-            <p className="font-mono text-xs md:text-sm text-foreground/60 tracking-wide leading-relaxed">
-              From classical scripts of the year 1000 to the heroic language movement of 1952, explore how words became monuments and letters became symbols of resistance.
-            </p>
-          </motion.div>
+          </div>
+          <Link href="#history">
+            <motion.button whileHover={{ y: -5 }} className="px-10 py-4 border-2 border-white/10 rounded-full font-mono text-xs uppercase tracking-widest text-white hover:border-accent hover:text-accent transition-all duration-500 bg-white/5 backdrop-blur-md">
+              Explore History ↓
+            </motion.button>
+          </Link>
+        </section>
 
-          <motion.div 
-            variants={itemVariants}
-            onMouseMove={(e) => {
-              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-              const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
-              const d = Math.hypot(mouse.x - cx, mouse.y - cy);
-              if (d < 120) {
-                const a = Math.atan2(mouse.y - cy, mouse.x - cx);
-                const t = (120 - d) / 120 * 15;
-                setBtnDelta(p => ({ ...p, explore: { x: Math.cos(a) * t, y: Math.sin(a) * t } }));
-              } else {
-                setBtnDelta(p => ({ ...p, explore: { x: 0, y: 0 } }));
-              }
-            }}
-            onMouseLeave={() => setBtnDelta(p => ({ ...p, explore: { x: 0, y: 0 } }))}
-          >
-            <Link href="#timeline">
-              <motion.button 
-                animate={btnDelta.explore}
-                transition={spring}
-                className="group relative px-8 py-3 border border-foreground/30 backdrop-blur-md bg-foreground/[0.02] hover:bg-accent/10 hover:border-accent/60 rounded-lg overflow-hidden"
-                onMouseEnter={(e) => {
-                  const b = e.currentTarget as HTMLElement;
-                  b.style.boxShadow = '0 0 30px rgba(0, 255, 204, 0.4), 0 0 60px rgba(0, 255, 204, 0.15)';
-                  b.style.letterSpacing = '0.1em';
-                }}
-                onMouseLeave={(e) => {
-                  const b = e.currentTarget as HTMLElement;
-                  b.style.boxShadow = 'none';
-                  b.style.letterSpacing = '0.05em';
-                }}
-              >
-                <span className="font-mono text-sm uppercase tracking-wider text-foreground group-hover:text-accent transition-colors">
-                  Explore
-                </span>
-              </motion.button>
-            </Link>
-          </motion.div>
-        </motion.section>
+        <section id="history" className="py-48 px-4 border-t border-white/5">
+          <div className="max-w-5xl mx-auto">
+            <div className="mb-24 text-center">
+              <p className="font-mono text-xs uppercase tracking-[0.4em] text-accent font-bold mb-4">Heritage Timeline</p>
+              <h2 className="font-bangla text-6xl font-light text-white">ভাষার যাত্রা</h2>
+            </div>
+            
+            <div className="relative space-y-32">
+              <div className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-accent/30 to-transparent" />
+              {TIMELINE_EVENTS.map((event, idx) => (
+                <motion.div 
+                  key={idx} 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className={`flex items-center gap-12 ${idx % 2 === 0 ? "flex-row text-right" : "flex-row-reverse text-left"}`}
+                  onMouseEnter={() => setActiveTimeline(idx)}
+                  onMouseLeave={() => setActiveTimeline(null)}
+                >
+                  <div className="w-1/2">
+                    <span className="font-mono text-sm text-accent font-bold tracking-widest">{event.year}</span>
+                    <h3 className="font-bangla text-4xl text-white my-4">{event.bengaliYear}</h3>
+                    <p className="font-mono text-sm text-white/70 leading-relaxed max-w-sm ml-auto mr-0" style={idx % 2 !== 0 ? { marginLeft: 0 } : {}}>{event.description}</p>
+                  </div>
+                  <div className="relative z-20">
+                    <div className={`w-4 h-4 rounded-full border-2 transition-all duration-500 ${activeTimeline === idx ? 'bg-accent border-accent scale-150 shadow-[0_0_20px_#00ffcc]' : 'bg-[#020a06] border-white/30'}`} />
+                  </div>
+                  <div className="w-1/2" />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-        {/* Timeline Section - FIRST after Hero */}
-        <motion.section
-          id="timeline"
-          className="py-40 px-4"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-        >
-          <div className="max-w-4xl mx-auto">
-            {/* Section Header */}
-            <motion.div variants={itemVariants} className="mb-20 text-center">
-              <p className="font-mono text-xs uppercase tracking-widest text-foreground/50 mb-3">Heritage Timeline</p>
-              <h2 className="font-bangla text-5xl md:text-6xl font-light text-foreground">
-                ভাষার যাত্রা
-              </h2>
-            </motion.div>
+        <section className="py-32 px-4 border-y border-white/10 bg-white/[0.03]">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
+            {STATS.map((stat, i) => (
+              <div key={i} className="text-center group p-10 border border-white/5 hover:border-accent/30 rounded-3xl transition-all duration-500 bg-white/[0.01]">
+                <p className="font-mono text-xs uppercase tracking-[0.3em] text-accent font-bold">{stat.label}</p>
+                <h4 className="font-bangla text-7xl md:text-8xl font-thin text-white my-6 tracking-tighter group-hover:text-accent transition-all duration-700">{stat.value}</h4>
+                <p className="font-mono text-sm uppercase tracking-widest text-white/60">{stat.sub}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
-            {/* Vertical Timeline */}
-            <div className="relative space-y-12">
-              {/* Central line */}
-              <div className="absolute left-1/2 top-0 bottom-0 w-px bg-foreground/20" />
-
-              {timelineEvents.map((event, idx) => {
-                const isHov = activeTimeline === idx;
-                return (
-                  <motion.div
-                    key={idx}
-                    variants={itemVariants}
-                    className={`flex gap-8 ${idx % 2 === 0 ? "flex-row" : "flex-row-reverse"}`}
-                    onMouseMove={(e) => {
-                      if (isHov) {
-                        const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                        setTlCursor({ x: e.clientX - r.left, y: e.clientY - r.top });
-                      }
-                    }}
-                    onMouseEnter={() => setActiveTimeline(idx)}
-                    onMouseLeave={() => {
-                      setActiveTimeline(null);
-                      setTlCursor({ x: 0, y: 0 });
-                    }}
-                  >
-                    <motion.div 
-                      className="w-1/2"
-                      animate={{ y: isHov ? -4 : 0 }}
-                      transition={spring}
-                    >
-                      <div className="text-right space-y-2" style={idx % 2 !== 0 ? { textAlign: "left" } : {}}>
-                        <p className="font-mono text-xs uppercase tracking-widest text-foreground/60">{event.year}</p>
-                        <h3 className="font-bangla text-2xl md:text-3xl font-medium text-foreground">
-                          {event.bengaliYear}
-                        </h3>
-                        <p className="font-mono text-sm text-foreground/70">{event.title}</p>
-                        <p className="font-mono text-xs text-foreground/50">{event.description}</p>
-                      </div>
-                    </motion.div>
-
-                    <div className="w-0 flex justify-center relative">
-                      {isHov && (
-                        <svg className="absolute pointer-events-none" style={{ left: 0, top: 0, width: "100%", height: "100%", zIndex: 5 }}>
-                          <line x1="0" y1="0" x2={tlCursor.x} y2={tlCursor.y} stroke="#00ffcc" strokeWidth="1" opacity="0.7" vectorEffect="non-scaling-stroke" />
-                        </svg>
-                      )}
-                      {isHov && (
-                        <motion.div className="absolute w-6 h-6 border border-accent rounded-full" animate={{ scale: [1, 2.5], opacity: [0.8, 0] }} transition={{ duration: 0.8, repeat: Infinity, ease: "easeOut" }} />
-                      )}
-                      <motion.div animate={{ scale: isHov ? 1.3 : 1, boxShadow: isHov ? "0 0 25px rgba(0, 255, 204, 0.8), 0 0 50px rgba(0, 255, 204, 0.3)" : "0 0 15px rgba(0, 255, 204, 0.5)" }} transition={spring}>
-                        <div className="absolute w-4 h-4 bg-accent rounded-full" />
-                        <div className="w-2 h-2 bg-accent rounded-full" />
+        <section id="glyphs" className="py-40 px-4">
+          <div className="max-w-5xl mx-auto flex flex-col lg:flex-row items-center gap-20">
+            <div className="w-full lg:w-1/3 space-y-8">
+              <p className="font-mono text-sm uppercase tracking-[0.3em] text-accent font-bold">Discovery Module</p>
+              <h2 className="font-bangla text-6xl font-light text-white leading-tight">বর্ণের<br/>শারীরস্থান</h2>
+              <p className="font-mono text-sm text-white/80 leading-loose">
+                Hover over the characters to witness the transition from 3rd-century Brahmi foundations to modern Bengali typography.
+              </p>
+            </div>
+            
+            <div className="w-full lg:w-2/3 grid grid-cols-1 sm:grid-cols-3 gap-8">
+              {GLYPHS.map((glyph, i) => (
+                <div 
+                  key={i} 
+                  onMouseEnter={() => setActiveGlyph(i)} 
+                  onMouseLeave={() => setActiveGlyph(null)}
+                  className="relative aspect-square border-2 border-white/10 rounded-[2rem] bg-white/[0.04] flex items-center justify-center overflow-hidden group cursor-crosshair hover:border-accent/50 transition-all duration-500"
+                >
+                  <AnimatePresence mode="wait">
+                    {activeGlyph === i ? (
+                      <motion.div key="brahmi" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="text-center">
+                        <span className="text-8xl font-serif text-accent drop-shadow-[0_0_25px_rgba(0,255,204,0.6)]">{glyph.brahmi}</span>
+                        <p className="absolute bottom-8 left-0 right-0 font-mono text-xs uppercase tracking-[0.2em] text-accent font-bold">Brahmi Ancestor</p>
                       </motion.div>
-                    </div>
-
-                    {/* Empty space */}
-                    <div className="w-1/2" />
-                  </motion.div>
-                );
-              })}
+                    ) : (
+                      <motion.div key="modern" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center">
+                        <span className="font-bangla text-9xl text-white/20 group-hover:text-white/90 transition-all duration-700">{glyph.char}</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
             </div>
           </div>
-        </motion.section>
+        </section>
 
-        {/* Features Section - Equal Height Cards */}
-        <motion.section
-          id="features"
-          className="py-40 px-4"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-        >
-          <div className="max-w-6xl mx-auto">
-            {/* Section Header */}
-            <motion.div variants={itemVariants} className="mb-20 text-center">
-              <p className="font-mono text-xs uppercase tracking-widest text-foreground/50 mb-3">Tools & Games</p>
-              <h2 className="font-bangla text-5xl md:text-6xl font-light text-foreground">
-                অভিজ্ঞতা শুরু করুন
-              </h2>
-            </motion.div>
-
-            {/* Grid with equal height */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Bangla Borno Card with Glass-morphism Glow */}
-              <motion.div
-                variants={itemVariants}
-                className="group relative h-[500px] flex flex-col rounded-lg overflow-hidden"
-                onMouseMove={(e) => {
-                  setHovered("create");
-                  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  const bg = (e.currentTarget as HTMLElement).querySelector(".card-bg") as HTMLElement;
-                  if (bg) {
-                    bg.style.setProperty("--spotlight-x", `${e.clientX - r.left}px`);
-                    bg.style.setProperty("--spotlight-y", `${e.clientY - r.top}px`);
-                    bg.style.setProperty("--spotlight-opacity", "1");
-                  }
-                }}
-                onMouseLeave={() => {
-                  setHovered(null);
-                  const bg = (e as any).currentTarget?.querySelector(".card-bg") as HTMLElement;
-                  if (bg) bg.style.setProperty("--spotlight-opacity", "0");
-                }}
-              >
-                <style>{`
-                  .card-bg {
-                    --spotlight-x: 50%;
-                    --spotlight-y: 50%;
-                    --spotlight-opacity: 0;
-                  }
-                  .card-bg::before {
-                    content: "";
-                    position: absolute;
-                    inset: 0;
-                    background: radial-gradient(600px at var(--spotlight-x) var(--spotlight-y), rgba(0, 255, 204, 0.2), transparent);
-                    opacity: var(--spotlight-opacity);
-                    pointer-events: none;
-                    transition: opacity 0.2s ease;
-                  }
-                `}</style>
-                <div className="card-bg absolute inset-0 bg-gradient-to-br from-accent/20 via-background to-background border border-foreground/20 group-hover:border-accent/40 backdrop-blur-xl" />
-                <div className="relative z-10 h-full flex flex-col p-8 justify-between">
-                  <motion.div 
-                    className="space-y-4"
-                    animate={{ y: hovered === "create" ? -2 : 0 }}
-                    transition={spring}
-                  >
-                    <div>
-                      <p className="font-mono text-xs uppercase tracking-widest text-foreground/60 mb-2">Digital Calligraphy</p>
-                      <h3 className="font-bangla text-3xl md:text-4xl font-semibold text-foreground">
-                        বাংলা বর্ণ
-                      </h3>
-                    </div>
-                    <p className="font-mono text-sm text-foreground/70 leading-relaxed">
-                      Transform your words into generative art. Witness Bangla letters evolve into living, breathing patterns.
-                    </p>
-                  </motion.div>
-                  
-                  {/* High-fidelity preview image */}
-                  <div className="relative mb-6 h-40 overflow-hidden rounded-lg bg-gradient-to-br from-accent/10 to-background border border-foreground/10">
-                    <Image
-                      src="/bangla-borno-preview.jpg"
-                      alt="Glowing neon Bengali letters in digital calligraphy"
-                      fill
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-
-                  <Link href="/create" className="w-full">
-                    <motion.button 
-                      className="w-full px-6 py-3 border border-foreground/30 backdrop-blur-sm bg-foreground/[0.02] hover:bg-accent/15 hover:border-accent/60 rounded-lg overflow-hidden"
-                      onMouseEnter={(e) => {
-                        const b = e.currentTarget as HTMLElement;
-                        b.style.boxShadow = '0 0 28px rgba(0, 255, 204, 0.5), 0 0 55px rgba(0, 255, 204, 0.2)';
-                        b.style.letterSpacing = '0.1em';
-                      }}
-                      onMouseLeave={(e) => {
-                        const b = e.currentTarget as HTMLElement;
-                        b.style.boxShadow = 'none';
-                        b.style.letterSpacing = '0.05em';
-                      }}
-                      animate={btnDelta.create}
-                      transition={spring}
-                      onMouseMove={(e) => {
-                        const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-                        const d = Math.hypot(mouse.x - cx, mouse.y - cy);
-                        if (d < 100) {
-                          const a = Math.atan2(mouse.y - cy, mouse.x - cx);
-                          const t = (100 - d) / 100 * 12;
-                          setBtnDelta(p => ({ ...p, create: { x: Math.cos(a) * t, y: Math.sin(a) * t } }));
-                        }
-                      }}
-                      onMouseLeave={() => setBtnDelta(p => ({ ...p, create: { x: 0, y: 0 } }))}
-                    >
-                      <span className="font-mono text-xs uppercase tracking-wider text-foreground group-hover:text-accent transition-colors">
-                        আরও দেখুন →
-                      </span>
-                    </motion.button>
-                  </Link>
-                </div>
-              </motion.div>
-
-              {/* Borno Stack Card with Glass-morphism Glow */}
-              <motion.div
-                variants={itemVariants}
-                className="group relative h-[500px] flex flex-col rounded-lg overflow-hidden"
-                onMouseMove={(e) => {
-                  setHovered("game");
-                  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  const bg = (e.currentTarget as HTMLElement).querySelector(".card-bg") as HTMLElement;
-                  if (bg) {
-                    bg.style.setProperty("--spotlight-x", `${e.clientX - r.left}px`);
-                    bg.style.setProperty("--spotlight-y", `${e.clientY - r.top}px`);
-                    bg.style.setProperty("--spotlight-opacity", "1");
-                  }
-                }}
-                onMouseLeave={() => {
-                  setHovered(null);
-                  const bg = (e as any).currentTarget?.querySelector(".card-bg") as HTMLElement;
-                  if (bg) bg.style.setProperty("--spotlight-opacity", "0");
-                }}
-              >
-                <div className="card-bg absolute inset-0 bg-gradient-to-br from-foreground/5 via-background to-background border border-foreground/20 group-hover:border-accent/40 backdrop-blur-xl" />
-                <div className="relative z-10 h-full flex flex-col p-8 justify-between">
-                  <motion.div 
-                    className="space-y-4"
-                    animate={{ y: hovered === "game" ? -2 : 0 }}
-                    transition={spring}
-                  >
-                    <div>
-                      <p className="font-mono text-xs uppercase tracking-widest text-foreground/60 mb-2">Tower of Unity</p>
-                      <h3 className="font-bangla text-3xl md:text-4xl font-semibold text-foreground">
-                        বর্ণ স্ট্যাক
-                      </h3>
-                    </div>
-                    <p className="font-mono text-sm text-foreground/70 leading-relaxed">
-                      A physics-based stacking game with glass and stone Bengali letters. Stack, balance, and build monuments.
-                    </p>
-                  </motion.div>
-
-                  {/* 3D Preview Image */}
-                  <div className="relative mb-6 h-40 overflow-hidden rounded-lg bg-gradient-to-br from-accent/10 to-background border border-foreground/10">
-                    <Image
-                      src="/borno-stack-preview.jpg"
-                      alt="Glass and stone Bengali letters stacking"
-                      fill
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-
-                  <Link href="/game" className="w-full">
-                    <motion.button 
-                      className="w-full px-6 py-3 border border-foreground/30 backdrop-blur-sm bg-foreground/[0.02] hover:bg-accent/15 hover:border-accent/60 rounded-lg overflow-hidden"
-                      onMouseEnter={(e) => {
-                        const b = e.currentTarget as HTMLElement;
-                        b.style.boxShadow = '0 0 28px rgba(0, 255, 204, 0.5), 0 0 55px rgba(0, 255, 204, 0.2)';
-                        b.style.letterSpacing = '0.1em';
-                      }}
-                      onMouseLeave={(e) => {
-                        const b = e.currentTarget as HTMLElement;
-                        b.style.boxShadow = 'none';
-                        b.style.letterSpacing = '0.05em';
-                      }}
-                      animate={btnDelta.game}
-                      transition={spring}
-                      onMouseMove={(e) => {
-                        const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-                        const d = Math.hypot(mouse.x - cx, mouse.y - cy);
-                        if (d < 100) {
-                          const a = Math.atan2(mouse.y - cy, mouse.x - cx);
-                          const t = (100 - d) / 100 * 12;
-                          setBtnDelta(p => ({ ...p, game: { x: Math.cos(a) * t, y: Math.sin(a) * t } }));
-                        }
-                      }}
-                      onMouseLeave={() => setBtnDelta(p => ({ ...p, game: { x: 0, y: 0 } }))}
-                    >
-                      <span className="font-mono text-xs uppercase tracking-wider text-foreground group-hover:text-accent transition-colors">
-                        আরও দেখুন →
-                      </span>
-                    </motion.button>
-                  </Link>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </motion.section>
-
-        {/* Footer */}
-        <motion.footer
-          className="py-16 px-4 border-t border-foreground/10"
-          variants={itemVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-        >
-          <div className="max-w-6xl mx-auto text-center">
-            <p className="font-mono text-xs text-foreground/40 uppercase tracking-widest">
-              Celebrating Bangla Language Heritage
+        <section id="apps" className="py-40 px-4 border-t border-white/5">
+          <div className="max-w-4xl mx-auto text-center mb-24">
+            <p className="font-mono text-xs uppercase tracking-[0.4em] text-accent font-bold mb-6">System Applications</p>
+            <h2 className="font-bangla text-6xl text-white mb-8">অভিজ্ঞতা শুরু করুন</h2>
+            <p className="font-mono text-sm text-white/50 uppercase tracking-[0.2em] leading-relaxed">
+              Engage with the language through advanced digital modules. From generative art to physics-based structural play.
             </p>
           </div>
-        </motion.footer>
-        <footer className="py-12 text-center border-t border-border/20">
-          <a 
-            href="https://khan-jariff.vercel.app/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="font-mono text-[10px] text-foreground/40 hover:text-foreground/100 transition-colors duration-300"
-          >
-            made by Khan Jariff Al Naseeb
-          </a>
+
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="group relative h-[580px] rounded-[2.5rem] overflow-hidden border border-white/10 bg-gradient-to-br from-white/10 to-transparent p-12 flex flex-col justify-between hover:border-accent/60 transition-all duration-700 shadow-2xl">
+               <div>
+                  <p className="font-mono text-sm text-accent uppercase tracking-[0.3em] font-bold mb-8">Digital Calligraphy</p>
+                  <h3 className="font-bangla text-5xl text-white mb-6">বাংলা বর্ণ</h3>
+                  <p className="font-mono text-sm text-white/70 leading-relaxed max-w-xs">Transform your words into generative art. Witness letters evolve into living, breathing patterns.</p>
+               </div>
+               <Link href="/create">
+                 <button className="w-full py-6 rounded-2xl border-2 border-white/20 font-mono text-sm uppercase tracking-[0.3em] text-white hover:bg-accent hover:text-black hover:border-accent transition-all duration-500 font-black shadow-lg">
+                   Launch Game →
+                 </button>
+               </Link>
+            </div>
+            
+            <div className="group relative h-[580px] rounded-[2.5rem] overflow-hidden border border-white/10 bg-gradient-to-br from-white/10 to-transparent p-12 flex flex-col justify-between hover:border-accent/60 transition-all duration-700 shadow-2xl">
+               <div>
+                  <p className="font-mono text-sm text-accent uppercase tracking-[0.3em] font-bold mb-8">Physics Simulation</p>
+                  <h3 className="font-bangla text-5xl text-white mb-6">বর্ণ স্ট্যাক</h3>
+                  <p className="font-mono text-sm text-white/70 leading-relaxed max-w-xs">A physics-based stacking game with glass and stone letters. Stack, balance, and build monuments.</p>
+               </div>
+               <Link href="/game">
+                 <button className="w-full py-6 rounded-2xl border-2 border-white/20 font-mono text-sm uppercase tracking-[0.3em] text-white hover:bg-accent hover:text-black hover:border-accent transition-all duration-500 font-black shadow-lg">
+                   Launch Game →
+                 </button>
+               </Link>
+            </div>
+          </div>
+        </section>
+
+        <footer className="pt-40 pb-20 border-t border-white/5 bg-[#010804]">
+          <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-24 items-end">
+            <div className="space-y-10">
+              <h2 className="font-bangla text-5xl text-white tracking-tighter">ওক্ষর</h2>
+            </div>
+            
+            <div className="flex flex-col gap-6 items-start md:items-end">
+              <div className="flex flex-wrap gap-x-12 gap-y-4 font-mono text-[10px] uppercase tracking-[0.4em] text-white/40 font-bold">
+                <Link href="#history" className="hover:text-accent transition-colors">Journey</Link>
+                <Link href="#glyphs" className="hover:text-accent transition-colors">Anatomy</Link>
+                <Link href="#apps" className="hover:text-accent transition-colors">Systems</Link>
+              </div>
+              <div className="h-px w-full bg-white/5" />
+<p className="font-mono text-[10px] uppercase tracking-[0.5em] text-white/20">
+  Crafted by <Link href="https://khan-jariff.vercel.app/" target="_blank" className="text-white hover:text-accent transition-colors">Khan Jariff Al Naseeb</Link>
+</p>
+            </div>
+          </div>
         </footer>
       </div>
     </main>

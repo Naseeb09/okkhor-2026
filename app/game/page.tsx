@@ -37,14 +37,25 @@ export default function BornoStack() {
 
       Matter.World.clear(eng.current.world, false);
       const floor = Matter.Bodies.rectangle(w / 2, h + 20, w, 40, { isStatic: true, label: 'floor' });
-      const base = Matter.Bodies.rectangle(w / 2, h - 100, 320, 40, { isStatic: true, label: 'base', chamfer: { radius: 10 } });
+      
+      const baseWidth = w < 768 ? 240 : 320;
+      const base = Matter.Bodies.rectangle(w / 2, h - 100, baseWidth, 40, { 
+        isStatic: true, 
+        label: 'base',
+        chamfer: { radius: 10 }
+      });
+      
       Matter.Composite.add(eng.current.world, [floor, base]);
 
       const mouse = Matter.Mouse.create(c);
       mouse.pixelRatio = dpr; 
       const mc = Matter.MouseConstraint.create(eng.current, {
         mouse,
-        constraint: { stiffness: 0.4, angularStiffness: 0.1, render: { visible: false } }
+        constraint: { 
+          stiffness: 0.4, 
+          angularStiffness: 0.1,
+          render: { visible: false } 
+        }
       });
       Matter.Composite.add(eng.current.world, mc);
     };
@@ -54,7 +65,10 @@ export default function BornoStack() {
 
     Matter.Events.on(eng.current, 'collisionStart', (e) => {
       e.pairs.forEach((p) => {
-        if ((p.bodyA.label === 'floor' || p.bodyB.label === 'floor') && started) setOver(true);
+        if ((p.bodyA.label === 'floor' || p.bodyB.label === 'floor') && started) {
+            setOver(true);
+            setStarted(false);
+        }
       });
     });
 
@@ -63,13 +77,15 @@ export default function BornoStack() {
       const { w, h } = bounds.current;
       Matter.Engine.update(eng.current, 1000 / 60);
       
-      ctx.fillStyle = '#020d08';
+      ctx.fillStyle = '#010804';
       ctx.fillRect(0, 0, w, h);
 
-      ctx.shadowBlur = 20;
-      ctx.shadowColor = 'rgba(254, 250, 224, 0.2)';
-      ctx.fillStyle = 'rgba(254, 250, 224, 0.1)';
-      ctx.fillRect(w / 2 - 160, h - 120, 320, 40);
+      const bw = w < 768 ? 240 : 320;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+      ctx.fillRect(w / 2 - bw/2, h - 120, bw, 40);
+      ctx.fillStyle = 'rgba(0, 255, 204, 0.1)';
+      ctx.fillRect(w / 2 - (bw-40)/2, h - 140, bw - 40, 20);
+      ctx.fillRect(w / 2 - (bw-120)/2, h - 160, bw - 120, 20);
 
       letters.current.forEach((l) => {
         const { position: pos, angle } = l.body;
@@ -77,13 +93,27 @@ export default function BornoStack() {
         ctx.translate(pos.x, pos.y);
         ctx.rotate(angle);
         
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = l.mat === 'glass' ? 'rgba(0, 200, 255, 0.4)' : 'rgba(139, 0, 0, 0.4)';
-        ctx.fillStyle = l.mat === 'glass' ? 'rgba(100, 200, 255, 0.15)' : 'rgba(80, 80, 80, 0.8)';
-        ctx.fillRect(-28, -28, 56, 56);
+        if (l.mat === 'glass') {
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(0, 255, 204, 0.3)';
+            ctx.fillStyle = 'rgba(0, 255, 204, 0.05)';
+            ctx.strokeStyle = 'rgba(0, 255, 204, 0.6)';
+            ctx.lineWidth = 1.5;
+        } else {
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillStyle = '#121212';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.lineWidth = 2;
+        }
+
+        ctx.beginPath();
+        ctx.roundRect(-28, -28, 56, 56, 4);
+        ctx.fill();
+        ctx.stroke();
         
-        ctx.shadowBlur = 4;
-        ctx.fillStyle = '#fefae0';
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = l.mat === 'glass' ? '#00ffcc' : '#f0f0f0';
         ctx.font = 'bold 32px "Hind Siliguri"';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -104,63 +134,94 @@ export default function BornoStack() {
   }, [started]);
 
   useEffect(() => {
-    const spawn = () => {
-      const { w } = bounds.current;
-      const x = Math.random() * (w - 100) + 50;
-      const txt = chars[Math.floor(Math.random() * chars.length)];
-      const mat = Math.random() > 0.5 ? 'stone' : 'glass';
-      const body = Matter.Bodies.rectangle(x, -50, 56, 56, {
-        restitution: 0.2,
-        friction: 0.6,
-        frictionAir: 0.04,
-        label: 'char'
-      });
-      
-      Matter.Composite.add(eng.current.world, body);
-      letters.current.push({ body, txt, mat });
-      if (started) setScore(s => s + 1);
-    };
+    let timeoutId: any;
+    if (started && !over) {
+        const spawn = () => {
+            const { w } = bounds.current;
+            const x = Math.random() * (w - 120) + 60;
+            const txt = chars[Math.floor(Math.random() * chars.length)];
+            const mat = Math.random() > 0.5 ? 'stone' : 'glass';
+            const body = Matter.Bodies.rectangle(x, -50, 56, 56, {
+                restitution: 0.2,
+                friction: 0.6,
+                frictionAir: 0.04,
+                label: 'char'
+            });
+            
+            Matter.Composite.add(eng.current.world, body);
+            letters.current.push({ body, txt, mat });
+            setScore(s => s + 1);
 
-    const t = setInterval(spawn, started ? 1800 : 4500);
-    return () => clearInterval(t);
-  }, [started]);
+            let nextDelay = 2200;
+            if (score >= 8) {
+              nextDelay = Math.max(800, 2200 - ((score - 8) * 70));
+            }
+            timeoutId = setTimeout(spawn, nextDelay);
+        };
+        timeoutId = setTimeout(spawn, 1000);
+    }
+    return () => clearTimeout(timeoutId);
+  }, [started, over, score]);
+
+  const reset = () => {
+    letters.current = [];
+    setScore(0);
+    setOver(false);
+    setStarted(true);
+    Matter.World.clear(eng.current.world, false);
+    const { w, h } = bounds.current;
+    const floor = Matter.Bodies.rectangle(w / 2, h + 20, w, 40, { isStatic: true, label: 'floor' });
+    const bw = w < 768 ? 240 : 320;
+    const base = Matter.Bodies.rectangle(w / 2, h - 100, bw, 40, { isStatic: true, label: 'base', chamfer: { radius: 10 } });
+    Matter.Composite.add(eng.current.world, [floor, base]);
+  };
 
   return (
-    <div className="relative w-full h-screen bg-[#020d08] overflow-hidden selection:bg-transparent">
+    <div className="relative w-full h-screen bg-[#010804] overflow-hidden">
       <canvas ref={cvs} className="absolute inset-0 z-0 cursor-grab active:cursor-grabbing touch-none" />
       
-      <div className="relative z-10 w-full h-full pointer-events-none p-8 flex flex-col justify-between">
+      <div className="relative z-10 w-full h-full pointer-events-none p-10 flex flex-col justify-between">
         <div className="flex justify-between items-start">
-          <Link href="/" className="pointer-events-auto">
-            <button className="px-5 py-2 border border-white/10 rounded-full font-mono text-[10px] uppercase text-white/40 hover:text-white transition-all">
-              ← Exit
-            </button>
-          </Link>
+          <div className="space-y-1">
+            <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-emerald-500 font-bold">Borno Stack</p>
+          </div>
           <div className="text-right">
-            <p className="font-mono text-[9px] uppercase tracking-widest text-white/20">Active Stack</p>
-            <p className="text-5xl font-bold text-white tracking-tighter">{score}</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-white/40">Score</p>
+            <p className="text-6xl font-thin text-white tracking-tighter">{score}</p>
           </div>
         </div>
 
-
         <AnimatePresence>
           {!started && !over && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-md pointer-events-auto">
-              <h1 className="text-7xl text-white mb-2 font-bold tracking-tighter">বর্ণ স্ট্যাক</h1>
-              <p className="font-mono text-[10px] text-white/40 mb-10 tracking-[0.3em] uppercase">Stabilize the character tower</p>
-              <button onClick={() => setStarted(true)} className="px-14 py-4 bg-white text-black font-mono text-xs uppercase tracking-widest hover:invert transition-all">
-                Start
-              </button>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 flex flex-col items-center justify-center bg-[#010804]/80 backdrop-blur-xl pointer-events-auto">
+              <h1 className="font-bangla text-8xl text-white mb-6 font-thin tracking-tighter">বর্ণ স্ট্যাক</h1>
+              <p className="font-mono text-[10px] text-white/40 mb-12 tracking-[0.5em] uppercase max-w-xs text-center leading-loose">
+                Stabilize the character tower of Bangla letters.
+              </p>
+              <div className="flex gap-4">
+                <button onClick={() => setStarted(true)} className="px-12 py-4 bg-emerald-500 text-black font-mono text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white transition-all shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+                    Start
+                </button>
+              </div>
             </motion.div>
           )}
 
           {over && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 flex flex-col items-center justify-center bg-[#450a0a]/90 backdrop-blur-2xl pointer-events-auto">
-              <h1 className="text-9xl text-white mb-4 font-black">ব্যর্থ</h1>
-              <p className="font-mono text-sm text-white/60 mb-12 uppercase tracking-widest">Final Count: {score}</p>
-              <button onClick={() => window.location.reload()} className="px-12 py-4 border border-white text-white font-mono text-xs uppercase hover:bg-white hover:text-black transition-all">
-                Retry Session
-              </button>
+            <motion.div initial={{ opacity: 0, scale: 1.1 }} animate={{ opacity: 1, scale: 1 }} className="absolute inset-0 flex flex-col items-center justify-center bg-red-950/90 backdrop-blur-3xl pointer-events-auto">
+              <p className="font-mono text-[10px] uppercase tracking-[0.8em] text-red-500 font-bold mb-4">Structural Failure</p>
+              <h1 className="font-bangla text-9xl text-white mb-8 font-black">ব্যর্থ</h1>
+              <p className="font-mono text-xs text-white/40 mb-16 uppercase tracking-[0.4em]">Your Score: {score}</p>
+              
+              <div className="flex gap-6">
+                <Link href="/">
+                    <button className="px-10 py-5 border border-white/10 text-white/60 font-mono text-[10px] uppercase tracking-widest hover:bg-white hover:text-black transition-all">
+                        Exit to Core
+                    </button>
+                </Link>
+                <button onClick={reset} className="px-14 py-5 bg-white text-black font-mono text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-2xl">
+                    Retry Session
+                </button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
