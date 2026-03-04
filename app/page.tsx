@@ -41,23 +41,26 @@ export default function HomePage() {
   return (
     <main className="relative min-h-screen bg-[#020a06] text-foreground selection:bg-accent/40">
       
-<nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 px-6 ${scrolled ? "py-4" : "py-10"}`}>
-  <div className="max-w-7xl mx-auto flex items-center justify-between">
-    <Link href="/" className="font-bangla text-3xl text-white hover:text-accent transition-colors">ও</Link>
-    
-   
-    <div className="flex items-center gap-8 bg-[#0a1510]/60 backdrop-blur-[20px] border border-white/10 px-8 py-3 rounded-full shadow-2xl">
-      {["History", "Glyphs", "Apps"].map((item) => (
-        <Link 
-          key={item} 
-          href={`#${item.toLowerCase()}`} 
-          className="font-mono text-[11px] uppercase tracking-[0.5em] text-white/40 hover:text-white transition-all duration-300 font-black"
-        >
-          {item}
-        </Link>
-      ))}
-    </div>
-    <div className="w-8 md:block hidden" />
+<nav className={`fixed top-1 left-0 right-0 z-[100] flex justify-center transition-all duration-700 px-6 ${scrolled ? "top-4" : "top-8"}`}>
+  <div className="group flex items-center bg-[#0a1510]/40 backdrop-blur-xl border border-white/5 px-2 py-2 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all hover:border-emerald-500/20">
+    {["History", "Glyphs", "Apps"].map((item) => (
+      <Link
+        key={item}
+        href={`#${item.toLowerCase()}`}
+        className="relative px-6 py-2 font-mono text-[10px] uppercase tracking-[0.4em] text-white/30 hover:text-emerald-400 transition-all duration-500 font-bold group/item"
+      >
+        <span className="relative z-10">{item}</span>
+        
+
+        <div className="absolute inset-0 bg-white/[0.03] rounded-full opacity-0 group-hover/item:opacity-100 transition-opacity duration-500" />
+        
+
+        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-emerald-500 rounded-full opacity-0 group-hover/item:opacity-100 group-hover/item:shadow-[0_0_8px_#10b981] transition-all duration-500" />
+      </Link>
+    ))}
+
+
+
   </div>
 </nav>
 
